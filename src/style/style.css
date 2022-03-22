@@ -26,4 +26,68 @@ html {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center;
+}
+
+.modal {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.content {
+  width: 70%;
+  display: flex;
+  justify-content: space-between;
+  flex-direction: column;
+  background-color: white;
+}
+
+.image-container {
+  width: 100%;
+  height: 100%;
+}
+
+.content img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-height: 640px;
+  object-fit: contain;
+}
+
+.image-viewer {
+  background-color: rgba(0, 0, 0, 0.75);
+}
+
+.title {
+  display: flex;
+  justify-content: space-between;
+  padding: 5px;
+  font-weight: bold;
+}
+
+.image-info {
+  padding: 5px;
+  width: 100%;
+}
+
+.description,
+.likes,
+.description {
+  padding: 2px;
+}
+
+.close {
+  margin-left: 15px;
+  padding-left: 5px;
+  padding-right: 5px;
+  background-color: #d5d5d5;
+  border-radius: 3px;
+  cursor: pointer;
 }
