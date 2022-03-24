@@ -7,7 +7,7 @@ const api = {
       method: "GET",
       headers: {
         "Accept-Version": "v1",
-        Authorization: `Client-ID ${s}`,
+        Authorization: `Client-ID ${"LKYuZeAvXXZyKHLGdP-zKz7SEEa0VIPHDfZOi9Vr68o"}`,
       },
     };
     try {
@@ -24,7 +24,7 @@ const api = {
       method: "GET",
       headers: {
         "Accept-Version": "v1",
-        Authorization: `Client-ID ${s}`,
+        Authorization: `Client-ID ${"LKYuZeAvXXZyKHLGdP-zKz7SEEa0VIPHDfZOi9Vr68o"}`,
       },
     };
     try {

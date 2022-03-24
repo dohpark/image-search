@@ -17,8 +17,13 @@ function ImageViewer(target) {
   };
 
   this.close = () => {
-    this.imageViewer.innerHTML = "";
-    target.removeChild(this.imageViewer);
+    const content = document.querySelector(".content");
+    content.classList.remove("fadein");
+    content.classList.add("fadeout");
+    setTimeout(() => {
+      this.imageViewer.innerHTML = "";
+      target.removeChild(this.imageViewer);
+    }, 600);
   };
 
   this.open = async (id) => {
@@ -72,6 +77,9 @@ function ImageViewer(target) {
     contentWrapper.appendChild(imageInfo);
     this.imageViewer.appendChild(contentWrapper);
     target.appendChild(this.imageViewer);
+
+    const content = document.querySelector(".content");
+    content.classList.add("fadein");
 
     const closeButton = document.querySelector(".close");
     closeButton.addEventListener("click", (e) => {

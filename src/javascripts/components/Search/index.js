@@ -1,22 +1,48 @@
 import api from "../../api/index.js";
 import debounce from "../../utils/debounce.js";
 import ImageViewer from "../ImageViewer/index.js";
+import Loading from "../Loading/index.js";
+import checkSearchHistory from "../../utils/checkSearchHistory.js";
 
 function Search(target) {
   this.data = [];
+  this.searchHistoryArray = [];
   this.searchBar = null;
   this.searchResult = null;
   this.keyword = null;
-  this.page = 0;
+  this.page = 1;
   this.imageViewer = null;
+  this.loading = null;
 
   const createSearchBar = () => {
+    // searchWrapper
+    const searchBarWrapper = document.createElement("div");
+    searchBarWrapper.className = "search-input-wrapper";
+
+    // searchBar
     const searchBar = document.createElement("input");
     searchBar.setAttribute("type", "text");
     searchBar.placeholder = "사진을 검색해보세요.";
     searchBar.className = "search-input";
 
-    return searchBar;
+    // searchHistory
+    const searchHistoryWrapper = document.createElement("div");
+    searchHistoryWrapper.className = "search-history-wrapper";
+
+    const searchHistoryTitle = document.createElement("div");
+    searchHistoryTitle.className = "search-history-title";
+    searchHistoryTitle.innerHTML = "최근 검색 내역";
+
+    const searchHistoryContent = document.createElement("div");
+    searchHistoryContent.className = "search-history-content";
+
+    // append
+    searchHistoryWrapper.appendChild(searchHistoryTitle);
+    searchHistoryWrapper.appendChild(searchHistoryContent);
+    searchBarWrapper.appendChild(searchBar);
+    searchBarWrapper.appendChild(searchHistoryWrapper);
+
+    return searchBarWrapper;
   };
 
   const createSearchResult = () => {
@@ -26,45 +52,137 @@ function Search(target) {
     return searchResult;
   };
 
-  this.init = () => {
+  this.init = async () => {
     this.searchBar = createSearchBar();
     this.searchResult = createSearchResult();
     this.imageViewer = new ImageViewer(target);
+    this.loading = new Loading();
     target.appendChild(this.searchBar);
     target.appendChild(this.searchResult);
+
+    const localStorageArray = JSON.parse(localStorage.getItem("searchHistory"));
+
+    // localStorage
+    if (!localStorageArray || !localStorageArray.length) {
+      localStorage.setItem("searchHistory", JSON.stringify([]));
+    } else {
+      this.searchHistoryArray = localStorageArray;
+      this.keyword = this.searchHistoryArray[0];
+      this.loading.on();
+      const result = await api.searchPhotos(this.keyword, this.page);
+      this.data = result.results;
+      setTimeout(() => {
+        this.loading.off();
+      }, 1000);
+    }
     this.bindEvents();
+    this.render();
   };
 
   this.render = () => {
-    this.searchResult.innerHTML = this.data
-      .map((result) => {
-        return `
+    // searchResult
+    if (!this.data.length && this.keyword) {
+      this.searchResult.innerHTML = "검색 결과가 없습니다";
+    } else {
+      this.searchResult.innerHTML = this.data
+        .map((result) => {
+          return `
           <div class="item">
             <img src=${result.urls.regular} alt=${result.alt_description} data-id=${result.id}/>
           </div>
         `;
-      })
-      .join("");
+        })
+        .join("");
+    }
 
+    // searchResult event
     this.searchResult.querySelectorAll(".item").forEach((item, index) => {
       item.addEventListener("click", (e) => {
         const id = e.target.getAttribute("data-id");
         this.imageViewer.open(id);
       });
     });
+
+    // searchHistory
+    const searchHistoryWrapper = document.querySelector(
+      ".search-history-wrapper"
+    );
+    if (this.searchHistoryArray.length) {
+      const input = document.querySelector(".search-input");
+      input.style["border-bottom-left-radius"] = "0px";
+      input.style["border-bottom-right-radius"] = "0px";
+      searchHistoryWrapper.style.display = "block";
+      const searchHistoryContent = document.querySelector(
+        ".search-history-content"
+      );
+      searchHistoryContent.innerHTML = "";
+      this.searchHistoryArray.map((keyword) => {
+        const searchHistoryItem = document.createElement("div");
+        searchHistoryItem.innerHTML = keyword;
+        searchHistoryItem.className = "search-history-item";
+        searchHistoryContent.appendChild(searchHistoryItem);
+      });
+
+      // searchHistory event
+      searchHistoryContent
+        .querySelectorAll(".search-history-item")
+        .forEach((item) => {
+          item.addEventListener("click", async (e) => {
+            this.keyword = e.target.innerHTML;
+            this.page = 1;
+            this.searchHistoryArray = checkSearchHistory(
+              this.searchHistoryArray,
+              this.keyword
+            );
+            this.loading.on();
+            const result = await api.searchPhotos(this.keyword, this.page);
+            this.data = result.results;
+            this.render();
+            setTimeout(() => {
+              this.loading.off();
+            }, 1000);
+          });
+        });
+    } else {
+      searchHistoryWrapper.style.display = "none";
+    }
   };
 
   this.bindEvents = () => {
-    this.searchBar.addEventListener("keyup", async (e) => {
-      if (e.keyCode === 13) {
-        this.page = 1;
-        this.keyword = this.searchBar.value;
-        const result = await api.searchPhotos(this.keyword, this.page);
-        this.data = result.results;
-        this.render();
-        console.log(this.data);
-      }
+    const searchBar = this.searchBar.querySelector(".search-input");
+
+    searchBar.focus();
+
+    searchBar.addEventListener("click", () => {
+      searchBar.value = null;
     });
+
+    searchBar.addEventListener(
+      "keyup",
+      debounce(async (e) => {
+        if (e.keyCode === 13) {
+          this.page = 1;
+          this.keyword = searchBar.value;
+          this.searchHistoryArray = checkSearchHistory(
+            this.searchHistoryArray,
+            this.keyword
+          );
+          localStorage.setItem(
+            "searchHistory",
+            JSON.stringify(this.searchHistoryArray)
+          );
+          this.loading.on();
+          const result = await api.searchPhotos(this.keyword, this.page);
+          this.data = result.results;
+          this.render();
+          setTimeout(() => {
+            this.loading.off();
+          }, 1000);
+          searchBar.autofocus = false;
+          console.log(this.data);
+        }
+      }, 100)
+    );
 
     window.addEventListener(
       "scroll",
