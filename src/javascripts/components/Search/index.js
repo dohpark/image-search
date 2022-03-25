@@ -88,7 +88,7 @@ function Search(target) {
         .map((result) => {
           return `
           <div class="item">
-            <img src=${result.urls.regular} alt=${result.alt_description} data-id=${result.id}/>
+            <img src=${result.urls.thumb} alt="${result.alt_description}" data-id=${result.id} data-full=${result.urls.full} title="${result.alt_description}" />
           </div>
         `;
         })
@@ -96,12 +96,10 @@ function Search(target) {
     }
 
     // searchResult event
-    this.searchResult.querySelectorAll(".item").forEach((item, index) => {
-      item.addEventListener("click", (e) => {
-        const id = e.target.getAttribute("data-id");
-        this.imageViewer.open(id);
-      });
-    });
+    searchResultEvent();
+
+    // lazy-loading
+    lazyLoading();
 
     // searchHistory
     const searchHistoryWrapper = document.querySelector(
@@ -201,21 +199,53 @@ function Search(target) {
             .map((result) => {
               return `
           <div class="item">
-            <img src=${result.urls.regular} alt="${result.alt_description}" data-id=${result.id}/>
+            <img src=${result.urls.thumb} alt="${result.alt_description}" data-id=${result.id} data-full=${result.urls.full} title="${result.alt_description}" />
           </div>
         `;
             })
             .join("");
 
-          this.searchResult.querySelectorAll(".item").forEach((item, index) => {
-            item.addEventListener("click", (e) => {
-              const id = e.target.getAttribute("data-id");
-              this.imageViewer.open(id);
-            });
-          });
+          // searchResult event
+          searchResultEvent();
+
+          // lazy loading
+          lazyLoading();
         }
       }, 300)
     );
+  };
+
+  const lazyLoading = () => {
+    let options = {
+      root: null,
+      rootMargin: "0px",
+      threshold: 0.25,
+    };
+    let callback = (entries, observer) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          let imageUrl = entry.target.getAttribute("data-full");
+          if (imageUrl) {
+            entry.target.src = imageUrl;
+            observer.unobserve(entry.target);
+          }
+        }
+      });
+    };
+    let observer = new IntersectionObserver(callback, options);
+    const imgs = document.querySelectorAll(".item img");
+    imgs.forEach((img) => {
+      observer.observe(img);
+    });
+  };
+
+  const searchResultEvent = () => {
+    this.searchResult.querySelectorAll(".item").forEach((item) => {
+      item.addEventListener("click", (e) => {
+        const id = e.target.getAttribute("data-id");
+        this.imageViewer.open(id);
+      });
+    });
   };
 
   this.init();
