@@ -35,6 +35,23 @@ const api = {
       console.log(e);
     }
   },
+  randomPhoto: async () => {
+    const url = `${baseURL}/photos/random`;
+    const option = {
+      method: "GET",
+      headers: {
+        "Accept-Version": "v1",
+        Authorization: `Client-ID ${"LKYuZeAvXXZyKHLGdP-zKz7SEEa0VIPHDfZOi9Vr68o"}`,
+      },
+    };
+    try {
+      const res = await fetch(url, option);
+      const resBody = await res.json();
+      return resBody;
+    } catch (e) {
+      console.log(e);
+    }
+  },
 };
 
 export default api;
