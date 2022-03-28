@@ -4,6 +4,7 @@ function DarkMode(target) {
 
   const createButton = () => {
     const button = document.createElement("button");
+    button.className = "mode-button";
     return button;
   };
 

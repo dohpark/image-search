@@ -7,47 +7,18 @@ function SearchBox(target, { setData, setPage, setKeyword }) {
   this.keyword = null;
   this.history = [];
 
-  const createSearchBar = () => {
-    // searchWrapper
-    const searchBarWrapper = document.createElement("div");
-    searchBarWrapper.className = "search-input-wrapper";
-
-    // searchBar
-    const searchBar = document.createElement("input");
-    searchBar.setAttribute("type", "text");
-    searchBar.placeholder = "사진을 검색해보세요.";
-    searchBar.className = "search-input";
-
-    // searchHistory
-    const searchHistoryWrapper = document.createElement("div");
-    searchHistoryWrapper.className = "search-history-wrapper";
-
-    const searchHistoryTitle = document.createElement("div");
-    searchHistoryTitle.className = "search-history-title";
-    searchHistoryTitle.innerHTML = "최근 검색 내역";
-
-    const searchHistoryContent = document.createElement("div");
-    searchHistoryContent.className = "search-history-content";
-
-    // append
-    searchHistoryWrapper.appendChild(searchHistoryTitle);
-    searchHistoryWrapper.appendChild(searchHistoryContent);
-    searchBarWrapper.appendChild(searchBar);
-    searchBarWrapper.appendChild(searchHistoryWrapper);
-
-    return searchBarWrapper;
-  };
-
   this.init = async () => {
     this.searchBar = createSearchBar();
     target.appendChild(this.searchBar);
 
     // localStorage
-    const localStorageArray = JSON.parse(localStorage.getItem("searchHistory"));
-    if (!localStorageArray || !localStorageArray.length) {
+    const localStorageHistory = JSON.parse(
+      localStorage.getItem("searchHistory")
+    );
+    if (!localStorageHistory || !localStorageHistory.length) {
       localStorage.setItem("searchHistory", JSON.stringify([]));
     } else {
-      this.history = localStorageArray;
+      this.history = localStorageHistory;
       this.keyword = this.history[0];
       const result = await api.searchPhotos(this.keyword, 1);
       setKeyword(this.keyword);
@@ -93,14 +64,8 @@ function SearchBox(target, { setData, setPage, setKeyword }) {
         .forEach((item) => {
           item.addEventListener("click", async (e) => {
             this.keyword = e.target.innerHTML;
-            this.history = checkSearchHistory(
-              this.searchHistoryArray,
-              this.keyword
-            );
-            localStorage.setItem(
-              "searchHistory",
-              JSON.stringify(this.searchHistoryArray)
-            );
+            this.history = checkSearchHistory(this.history, this.keyword);
+            localStorage.setItem("searchHistory", JSON.stringify(this.history));
             const result = await api.searchPhotos(this.keyword, 1);
             setKeyword(this.keyword);
             setData(result.results);
@@ -125,16 +90,9 @@ function SearchBox(target, { setData, setPage, setKeyword }) {
       "keyup",
       debounce(async (e) => {
         if (e.keyCode === 13) {
-          console.log("keyup");
           this.keyword = searchBar.value;
-          this.searchHistoryArray = checkSearchHistory(
-            this.history,
-            this.keyword
-          );
-          localStorage.setItem(
-            "searchHistory",
-            JSON.stringify(this.searchHistoryArray)
-          );
+          this.history = checkSearchHistory(this.history, this.keyword);
+          localStorage.setItem("searchHistory", JSON.stringify(this.history));
           const result = await api.searchPhotos(this.keyword, 1);
           setKeyword(this.keyword);
           setPage(1);
@@ -143,6 +101,37 @@ function SearchBox(target, { setData, setPage, setKeyword }) {
         }
       }, 100)
     );
+  };
+
+  const createSearchBar = () => {
+    // searchWrapper
+    const searchBarWrapper = document.createElement("div");
+    searchBarWrapper.className = "search-input-wrapper";
+
+    // searchBar
+    const searchBar = document.createElement("input");
+    searchBar.setAttribute("type", "text");
+    searchBar.placeholder = "사진을 검색해보세요.";
+    searchBar.className = "search-input";
+
+    // searchHistory
+    const searchHistoryWrapper = document.createElement("div");
+    searchHistoryWrapper.className = "search-history-wrapper";
+
+    const searchHistoryTitle = document.createElement("div");
+    searchHistoryTitle.className = "search-history-title";
+    searchHistoryTitle.innerHTML = "최근 검색 내역";
+
+    const searchHistoryContent = document.createElement("div");
+    searchHistoryContent.className = "search-history-content";
+
+    // append
+    searchHistoryWrapper.appendChild(searchHistoryTitle);
+    searchHistoryWrapper.appendChild(searchHistoryContent);
+    searchBarWrapper.appendChild(searchBar);
+    searchBarWrapper.appendChild(searchHistoryWrapper);
+
+    return searchBarWrapper;
   };
 
   this.init();

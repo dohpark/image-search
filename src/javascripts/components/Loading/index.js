@@ -26,11 +26,13 @@ function Loading() {
   this.on = () => {
     this.state = true;
     this.render();
+    document.body.style["overflow-y"] = "hidden";
   };
 
   this.off = () => {
     this.state = false;
     this.render();
+    document.body.style["overflow-y"] = "scroll";
   };
 
   this.render = () => {

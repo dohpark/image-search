@@ -5,7 +5,6 @@ function ImageViewer(target) {
 
   const createImageViewer = () => {
     const imageViewerWrapper = document.createElement("section");
-
     imageViewerWrapper.classList.add("modal", "image-viewer");
 
     return imageViewerWrapper;
@@ -20,6 +19,7 @@ function ImageViewer(target) {
     const content = document.querySelector(".content");
     content.classList.remove("fadein");
     content.classList.add("fadeout");
+    document.body.style["overflow-y"] = "scroll";
     setTimeout(() => {
       this.imageViewer.innerHTML = "";
       target.removeChild(this.imageViewer);
@@ -27,9 +27,11 @@ function ImageViewer(target) {
   };
 
   this.open = async (id) => {
-    let count = 2;
-    const { urls, alt_description, likes, tags, description } =
+    document.body.style["overflow-y"] = "hidden";
+    const { urls, alt_description, likes, tags, description, user } =
       await api.searchId(id);
+
+    console.log(await api.searchId(id));
 
     const contentWrapper = document.createElement("div");
     contentWrapper.className = "content";
@@ -37,21 +39,22 @@ function ImageViewer(target) {
     const imageInfo = document.createElement("div");
     imageInfo.className = "image-info";
 
+    // likes
     const imageLikes = document.createElement("div");
     imageLikes.className = "likes";
     imageLikes.innerHTML = `🔥 ${likes}`;
     imageInfo.appendChild(imageLikes);
 
-    if (description) {
-      count++;
-      const imageDescription = document.createElement("div");
-      imageDescription.className = "description";
-      imageDescription.innerHTML = `${description}`;
-      imageInfo.appendChild(imageDescription);
-    }
+    // description
+    const imageDescription = document.createElement("div");
+    imageDescription.className = "description";
+    imageDescription.innerHTML = `<span class="id">${user.username}</span> ${
+      description ? description : ""
+    }`;
+    imageInfo.appendChild(imageDescription);
 
+    // tags
     if (tags.length) {
-      count++;
       const imageTags = document.createElement("div");
       imageTags.className = "tags";
       let tagsValue = "";
@@ -69,22 +72,28 @@ function ImageViewer(target) {
         <div class="close">x</div>
       </div>
       <div class="image-container">
-        <img src="${urls.regular}" alt="${
+        <img src="${urls.thumb}" alt="${
       alt_description ? alt_description : "no description"
-    }"/>
+    }" data-full=${urls.full} />
       </div>`;
 
+    // appendChild
     contentWrapper.appendChild(imageInfo);
     this.imageViewer.appendChild(contentWrapper);
     target.appendChild(this.imageViewer);
 
+    // fade-in animation
     const content = document.querySelector(".content");
     content.classList.add("fadein");
 
+    // x button
     const closeButton = document.querySelector(".close");
     closeButton.addEventListener("click", (e) => {
       this.close();
     });
+
+    // lazy-loading
+    lazyLoading();
   };
 
   this.bindEvents = () => {
@@ -94,6 +103,29 @@ function ImageViewer(target) {
         this.close();
       }
     });
+  };
+
+  const lazyLoading = () => {
+    let options = {
+      root: null,
+      rootMargin: "0px",
+      threshold: 0.25,
+    };
+    let callback = (entries, observer) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          let imageUrl = entry.target.getAttribute("data-full");
+          if (imageUrl) {
+            entry.target.src = imageUrl;
+            observer.unobserve(entry.target);
+          }
+        }
+      });
+    };
+    let observer = new IntersectionObserver(callback, options);
+    const img = document.querySelector(".image-viewer img");
+
+    observer.observe(img);
   };
 
   this.init();

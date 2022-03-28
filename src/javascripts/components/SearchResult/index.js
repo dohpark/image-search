@@ -1,50 +1,57 @@
 import api from "../../api/index.js";
 import debounce from "../../utils/debounce.js";
 import ImageViewer from "../ImageViewer/index.js";
+import Loading from "../Loading/index.js";
 
 function SearchResult(target, { getData, getPage, getKeyword }) {
   this.data = null;
   this.page = null;
   this.keyword = null;
+  this.loading = null;
+  this.imageViewer = null;
 
   this.init = async () => {
     this.searchResult = createSearchResult();
     this.imageViewer = new ImageViewer(target);
+    this.loading = new Loading();
     target.appendChild(this.searchResult);
 
     this.bindEvents();
-    this.render();
   };
 
   this.render = () => {
     this.data = getData();
     this.keyword = getKeyword();
     this.page = getPage();
-    console.log(this.data, this.keyword);
     // searchResult
     if (!this.data.length && this.keyword) {
       this.searchResult.innerHTML = "검색 결과가 없습니다";
     } else {
+      this.loading.on();
       this.searchResult.innerHTML = this.data
         .map((result) => {
           return `
           <div class="item">
             <img src=${result.urls.thumb} alt="${
             result.alt_description
-          }" data-id=${result.id} data-full=${result.urls.full} title="${
+          }" data-id=${result.id} data-regular=${result.urls.regular} title="${
             result.alt_description ? result.alt_description : "no Title"
           }" />
           </div>
         `;
         })
         .join("");
+
+      setTimeout(() => {
+        this.loading.off();
+      }, 1000);
+
+      // searchResult event
+      searchResultEvent();
+
+      // lazy-loading
+      lazyLoading();
     }
-
-    // searchResult event
-    searchResultEvent();
-
-    // lazy-loading
-    lazyLoading();
   };
 
   this.bindEvents = () => {
@@ -55,12 +62,10 @@ function SearchResult(target, { getData, getPage, getKeyword }) {
           window.innerHeight + window.scrollY >= document.body.offsetHeight &&
           this.data.length
         ) {
+          this.loading.on();
           this.page += 1;
           const result = await api.searchPhotos(this.keyword, this.page);
           this.data = result.results;
-
-          console.log(this.data);
-          console.log(this.page);
 
           this.searchResult.innerHTML += this.data
             .map((result) => {
@@ -68,13 +73,19 @@ function SearchResult(target, { getData, getPage, getKeyword }) {
           <div class="item">
             <img src=${result.urls.thumb} alt="${
                 result.alt_description
-              }" data-id=${result.id} data-full=${result.urls.full} title="${
+              }" data-id=${result.id} data-regular=${
+                result.urls.regular
+              } title="${
                 result.alt_description ? result.alt_description : "no Title"
               }" />
           </div>
         `;
             })
             .join("");
+
+          setTimeout(() => {
+            this.loading.off();
+          }, 1000);
 
           // searchResult event
           searchResultEvent();
@@ -95,7 +106,7 @@ function SearchResult(target, { getData, getPage, getKeyword }) {
     let callback = (entries, observer) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
-          let imageUrl = entry.target.getAttribute("data-full");
+          let imageUrl = entry.target.getAttribute("data-regular");
           if (imageUrl) {
             entry.target.src = imageUrl;
             observer.unobserve(entry.target);
