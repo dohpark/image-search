@@ -52,15 +52,28 @@ function SearchBox(target, { setData, setPage, setKeyword }) {
       );
       searchHistoryContent.innerHTML = "";
       this.history.map((keyword) => {
+        // wrapper
         const searchHistoryItem = document.createElement("div");
-        searchHistoryItem.innerHTML = keyword;
         searchHistoryItem.className = "search-history-item";
+
+        // content
+        const content = document.createElement("div");
+        content.innerHTML = keyword;
+        content.className = "history-content";
+
+        // button
+        const button = document.createElement("span");
+        button.innerHTML = "x";
+        button.className = "history-x-button";
+
+        searchHistoryItem.appendChild(content);
+        searchHistoryItem.appendChild(button);
         searchHistoryContent.appendChild(searchHistoryItem);
       });
 
       // searchHistory event
       searchHistoryContent
-        .querySelectorAll(".search-history-item")
+        .querySelectorAll(".search-history-item .history-content")
         .forEach((item) => {
           item.addEventListener("click", async (e) => {
             this.keyword = e.target.innerHTML;
@@ -73,7 +86,20 @@ function SearchBox(target, { setData, setPage, setKeyword }) {
             this.render();
           });
         });
+
+      searchHistoryContent
+        .querySelectorAll(".search-history-item .history-x-button")
+        .forEach((item, index) => {
+          item.addEventListener("click", () => {
+            this.history.splice(index, 1);
+            localStorage.setItem("searchHistory", JSON.stringify(this.history));
+            this.render();
+          });
+        });
     } else {
+      const input = document.querySelector(".search-input");
+      input.style["border-bottom-left-radius"] = "15px";
+      input.style["border-bottom-right-radius"] = "15px";
       searchHistoryWrapper.style.display = "none";
     }
   };
@@ -89,7 +115,7 @@ function SearchBox(target, { setData, setPage, setKeyword }) {
     searchBar.addEventListener(
       "keyup",
       debounce(async (e) => {
-        if (e.keyCode === 13) {
+        if (e.keyCode === 13 && searchBar.value) {
           this.keyword = searchBar.value;
           this.history = checkSearchHistory(this.history, this.keyword);
           localStorage.setItem("searchHistory", JSON.stringify(this.history));
@@ -99,7 +125,7 @@ function SearchBox(target, { setData, setPage, setKeyword }) {
           setData(result.results);
           this.render();
         }
-      }, 100)
+      }, 250)
     );
   };
 
@@ -109,10 +135,18 @@ function SearchBox(target, { setData, setPage, setKeyword }) {
     searchBarWrapper.className = "search-input-wrapper";
 
     // searchBar
+    const searchForm = document.createElement("form");
     const searchBar = document.createElement("input");
+    const searchLabel = document.createElement("label");
+
     searchBar.setAttribute("type", "text");
     searchBar.placeholder = "사진을 검색해보세요.";
     searchBar.className = "search-input";
+    searchBar.id = "search-input";
+
+    searchLabel.setAttribute("for", "search-input");
+    searchLabel.innerHTML = "사진 검색";
+    searchLabel.classList.add("hidden");
 
     // searchHistory
     const searchHistoryWrapper = document.createElement("div");
@@ -128,7 +162,9 @@ function SearchBox(target, { setData, setPage, setKeyword }) {
     // append
     searchHistoryWrapper.appendChild(searchHistoryTitle);
     searchHistoryWrapper.appendChild(searchHistoryContent);
-    searchBarWrapper.appendChild(searchBar);
+    searchForm.appendChild(searchBar);
+    searchForm.appendChild(searchLabel);
+    searchBarWrapper.appendChild(searchForm);
     searchBarWrapper.appendChild(searchHistoryWrapper);
 
     return searchBarWrapper;

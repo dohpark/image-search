@@ -8,10 +8,20 @@ html {
   column-gap: 1.5em;
 }
 
+.hidden {
+  position: absolute;
+  left: -100000px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
 .mode-button {
   padding: 8px 15px;
   border-radius: 15px;
   background-color: white;
+  cursor: pointer;
 }
 
 .dark-mode .mode-button {
@@ -62,11 +72,21 @@ html {
 }
 .search-history-item {
   padding: 7px 10px 7px 15px;
+  display: flex;
+  justify-content: space-between;
 }
 
 .search-history-item:hover {
   background-color: rgba(0, 0, 0, 0.2);
   cursor: pointer;
+}
+
+.search-history-item .history-content {
+  width: 100%;
+}
+
+.search-history-item .history-x-button {
+  padding: 0 10px;
 }
 
 .search-result {

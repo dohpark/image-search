@@ -17,13 +17,16 @@ function ImageViewer(target) {
 
   this.close = () => {
     const content = document.querySelector(".content");
-    content.classList.remove("fadein");
-    content.classList.add("fadeout");
-    document.body.style["overflow-y"] = "scroll";
-    setTimeout(() => {
-      this.imageViewer.innerHTML = "";
-      target.removeChild(this.imageViewer);
-    }, 600);
+    const fadeIn = document.querySelector(".fadein");
+    if (fadeIn) {
+      content.classList.remove("fadein");
+      content.classList.add("fadeout");
+      content.addEventListener("animationend", () => {
+        this.imageViewer.innerHTML = "";
+        target.removeChild(this.imageViewer);
+      });
+      document.body.style["overflow-y"] = "scroll";
+    }
   };
 
   this.open = async (id) => {

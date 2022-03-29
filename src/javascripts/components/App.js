@@ -13,13 +13,29 @@ function App() {
 
   this.init = (elementQuery) => {
     this.renderElement = document.querySelector(elementQuery);
-    this.darkmode = new DarkMode(this.renderElement);
-    this.searchBox = new SearchBox(this.renderElement, {
+
+    // header
+    const header = document.createElement("header");
+    const h1 = document.createElement("h1");
+    h1.classList.add("hidden");
+    h1.innerHTML = "이미지 검색";
+    header.appendChild(h1);
+    this.darkmode = new DarkMode(header);
+    this.renderElement.appendChild(header);
+
+    // navigation
+    const nav = document.createElement("nav");
+    this.renderElement.appendChild(nav);
+    this.searchBox = new SearchBox(nav, {
       setData: this.setData,
       setPage: this.setPage,
       setKeyword: this.setKeyword,
     });
-    this.searchResult = new SearchResult(this.renderElement, {
+
+    // main
+    const main = document.createElement("main");
+    this.renderElement.appendChild(main);
+    this.searchResult = new SearchResult(main, {
       getData: this.getData,
       getPage: this.getPage,
       getKeyword: this.getKeyword,
