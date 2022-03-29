@@ -2,6 +2,7 @@ import api from "../../api/index.js";
 import debounce from "../../utils/debounce.js";
 import ImageViewer from "../ImageViewer/index.js";
 import Loading from "../Loading/index.js";
+import lazyLoading from "../../utils/lazyLoading.js";
 
 function SearchResult(target, { getData, getPage, getKeyword }) {
   this.data = null;
@@ -47,7 +48,7 @@ function SearchResult(target, { getData, getPage, getKeyword }) {
       }, 1000);
 
       // lazy-loading
-      lazyLoading();
+      lazyLoading("data-regular", ".item img");
     }
   };
 
@@ -94,34 +95,10 @@ function SearchResult(target, { getData, getPage, getKeyword }) {
           }, 1000);
 
           // lazy loading
-          lazyLoading();
+          lazyLoading("data-regular", ".item img");
         }
       }, 300)
     );
-  };
-
-  const lazyLoading = () => {
-    let options = {
-      root: null,
-      rootMargin: "0px",
-      threshold: 0.25,
-    };
-    let callback = (entries, observer) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          let imageUrl = entry.target.getAttribute("data-regular");
-          if (imageUrl) {
-            entry.target.src = imageUrl;
-            observer.unobserve(entry.target);
-          }
-        }
-      });
-    };
-    let observer = new IntersectionObserver(callback, options);
-    const imgs = document.querySelectorAll(".item img");
-    imgs.forEach((img) => {
-      observer.observe(img);
-    });
   };
 
   const createSearchResult = () => {

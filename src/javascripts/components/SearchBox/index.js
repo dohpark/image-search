@@ -126,16 +126,15 @@ function SearchBox(target, { setData, setPage, setKeyword }) {
       if (e.target.className === "history-x-button") {
         const grandparent = e.target.parentElement.parentElement;
         const parent = e.target.parentElement;
-        const index = Array.prototype.indexOf.call(
-          grandparent.children,
-          parent
-        );
-        console.log(index);
-        console.log(Array.from(grandparent).indexOf(Array.from(parent)));
+        // const index = Array.prototype.indexOf.call(
+        //   grandparent.children,
+        //   parent
+        // );
+        const index = Array.from(grandparent.children).indexOf(parent);
 
-        // this.history.splice(index, 1);
-        // localStorage.setItem("searchHistory", JSON.stringify(this.history));
-        // this.render();
+        this.history.splice(index, 1);
+        localStorage.setItem("searchHistory", JSON.stringify(this.history));
+        this.render();
       }
     });
   };

@@ -1,4 +1,5 @@
 import api from "../../api/index.js";
+import lazyLoading from "../../utils/lazyLoading.js";
 
 function ImageViewer(target) {
   this.imageViewer = null;
@@ -96,7 +97,7 @@ function ImageViewer(target) {
     });
 
     // lazy-loading
-    lazyLoading();
+    lazyLoading("data-full", ".image-viewer img");
   };
 
   this.bindEvents = () => {
@@ -106,29 +107,6 @@ function ImageViewer(target) {
         this.close();
       }
     });
-  };
-
-  const lazyLoading = () => {
-    let options = {
-      root: null,
-      rootMargin: "0px",
-      threshold: 0.25,
-    };
-    let callback = (entries, observer) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          let imageUrl = entry.target.getAttribute("data-full");
-          if (imageUrl) {
-            entry.target.src = imageUrl;
-            observer.unobserve(entry.target);
-          }
-        }
-      });
-    };
-    let observer = new IntersectionObserver(callback, options);
-    const img = document.querySelector(".image-viewer img");
-
-    observer.observe(img);
   };
 
   this.init();
