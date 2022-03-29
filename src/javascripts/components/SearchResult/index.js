@@ -46,15 +46,21 @@ function SearchResult(target, { getData, getPage, getKeyword }) {
         this.loading.off();
       }, 1000);
 
-      // searchResult event
-      searchResultEvent();
-
       // lazy-loading
       lazyLoading();
     }
   };
 
   this.bindEvents = () => {
+    // event delegation
+    this.searchResult.addEventListener("click", (e) => {
+      const id = e.target.getAttribute("data-id");
+      if (id) {
+        this.imageViewer.open(id);
+      }
+    });
+
+    // 무한 스크롤
     window.addEventListener(
       "scroll",
       debounce(async (e) => {
@@ -87,9 +93,6 @@ function SearchResult(target, { getData, getPage, getKeyword }) {
             this.loading.off();
           }, 1000);
 
-          // searchResult event
-          searchResultEvent();
-
           // lazy loading
           lazyLoading();
         }
@@ -118,15 +121,6 @@ function SearchResult(target, { getData, getPage, getKeyword }) {
     const imgs = document.querySelectorAll(".item img");
     imgs.forEach((img) => {
       observer.observe(img);
-    });
-  };
-
-  const searchResultEvent = () => {
-    this.searchResult.querySelectorAll(".item").forEach((item) => {
-      item.addEventListener("click", (e) => {
-        const id = e.target.getAttribute("data-id");
-        this.imageViewer.open(id);
-      });
     });
   };
 

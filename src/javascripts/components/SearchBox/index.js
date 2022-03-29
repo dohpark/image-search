@@ -70,32 +70,6 @@ function SearchBox(target, { setData, setPage, setKeyword }) {
         searchHistoryItem.appendChild(button);
         searchHistoryContent.appendChild(searchHistoryItem);
       });
-
-      // searchHistory event
-      searchHistoryContent
-        .querySelectorAll(".search-history-item .history-content")
-        .forEach((item) => {
-          item.addEventListener("click", async (e) => {
-            this.keyword = e.target.innerHTML;
-            this.history = checkSearchHistory(this.history, this.keyword);
-            localStorage.setItem("searchHistory", JSON.stringify(this.history));
-            const result = await api.searchPhotos(this.keyword, 1);
-            setKeyword(this.keyword);
-            setData(result.results);
-            setPage(1);
-            this.render();
-          });
-        });
-
-      searchHistoryContent
-        .querySelectorAll(".search-history-item .history-x-button")
-        .forEach((item, index) => {
-          item.addEventListener("click", () => {
-            this.history.splice(index, 1);
-            localStorage.setItem("searchHistory", JSON.stringify(this.history));
-            this.render();
-          });
-        });
     } else {
       const input = document.querySelector(".search-input");
       input.style["border-bottom-left-radius"] = "15px";
@@ -108,14 +82,16 @@ function SearchBox(target, { setData, setPage, setKeyword }) {
     const searchBar = this.searchBar.querySelector(".search-input");
     searchBar.focus();
 
+    // searchBar click
     searchBar.addEventListener("click", () => {
       searchBar.value = null;
     });
 
+    // searchBar 엔터
     searchBar.addEventListener(
       "keyup",
       debounce(async (e) => {
-        if (e.keyCode === 13 && searchBar.value) {
+        if (e.key === "Enter" && searchBar.value) {
           this.keyword = searchBar.value;
           this.history = checkSearchHistory(this.history, this.keyword);
           localStorage.setItem("searchHistory", JSON.stringify(this.history));
@@ -127,6 +103,41 @@ function SearchBox(target, { setData, setPage, setKeyword }) {
         }
       }, 250)
     );
+
+    // event delegation
+    // 검색 히스토리
+    const searchHistoryWrapper = document.querySelector(
+      ".search-input-wrapper"
+    );
+
+    searchHistoryWrapper.addEventListener("click", async (e) => {
+      if (e.target.className === "history-content") {
+        console.log("click");
+        this.keyword = e.target.innerHTML;
+        this.history = checkSearchHistory(this.history, this.keyword);
+        localStorage.setItem("searchHistory", JSON.stringify(this.history));
+        const result = await api.searchPhotos(this.keyword, 1);
+        setKeyword(this.keyword);
+        setData(result.results);
+        setPage(1);
+        this.render();
+      }
+
+      if (e.target.className === "history-x-button") {
+        const grandparent = e.target.parentElement.parentElement;
+        const parent = e.target.parentElement;
+        const index = Array.prototype.indexOf.call(
+          grandparent.children,
+          parent
+        );
+        console.log(index);
+        console.log(Array.from(grandparent).indexOf(Array.from(parent)));
+
+        // this.history.splice(index, 1);
+        // localStorage.setItem("searchHistory", JSON.stringify(this.history));
+        // this.render();
+      }
+    });
   };
 
   const createSearchBar = () => {
@@ -138,6 +149,8 @@ function SearchBox(target, { setData, setPage, setKeyword }) {
     const searchForm = document.createElement("form");
     const searchBar = document.createElement("input");
     const searchLabel = document.createElement("label");
+
+    searchForm.setAttribute("onsubmit", "return false");
 
     searchBar.setAttribute("type", "text");
     searchBar.placeholder = "사진을 검색해보세요.";
