@@ -15,7 +15,7 @@ function DarkMode(target) {
     if (this.state) {
       const body = document.body;
       body.classList.toggle("dark-mode");
-      this.button.innerHTML = "Ligth Mode";
+      this.button.innerHTML = "Light Mode";
     } else {
       this.button.innerHTML = "Dark Mode";
     }
@@ -31,7 +31,7 @@ function DarkMode(target) {
         this.button.innerHTML = "Dark Mode";
       } else {
         this.state = true;
-        this.button.innerHTML = "Ligth Mode";
+        this.button.innerHTML = "Light Mode";
       }
     });
   };

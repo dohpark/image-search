@@ -112,7 +112,6 @@ function SearchBox(target, { setData, setPage, setKeyword }) {
 
     searchHistoryWrapper.addEventListener("click", async (e) => {
       if (e.target.className === "history-content") {
-        console.log("click");
         this.keyword = e.target.innerHTML;
         this.history = checkSearchHistory(this.history, this.keyword);
         localStorage.setItem("searchHistory", JSON.stringify(this.history));
@@ -126,10 +125,6 @@ function SearchBox(target, { setData, setPage, setKeyword }) {
       if (e.target.className === "history-x-button") {
         const grandparent = e.target.parentElement.parentElement;
         const parent = e.target.parentElement;
-        // const index = Array.prototype.indexOf.call(
-        //   grandparent.children,
-        //   parent
-        // );
         const index = Array.from(grandparent.children).indexOf(parent);
 
         this.history.splice(index, 1);

@@ -54,12 +54,15 @@ function SearchResult(target, { getData, getPage, getKeyword }) {
 
   this.bindEvents = () => {
     // event delegation
-    this.searchResult.addEventListener("click", (e) => {
-      const id = e.target.getAttribute("data-id");
-      if (id) {
-        this.imageViewer.open(id);
-      }
-    });
+    this.searchResult.addEventListener(
+      "click",
+      debounce((e) => {
+        const id = e.target.getAttribute("data-id");
+        if (id) {
+          this.imageViewer.open(id);
+        }
+      }, 300)
+    );
 
     // 무한 스크롤
     window.addEventListener(

@@ -35,8 +35,6 @@ function ImageViewer(target) {
     const { urls, alt_description, likes, tags, description, user } =
       await api.searchId(id);
 
-    console.log(await api.searchId(id));
-
     const contentWrapper = document.createElement("div");
     contentWrapper.className = "content";
 
